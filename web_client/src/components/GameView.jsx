@@ -364,6 +364,13 @@ function GameView() {
     navigate('/');
   };
 
+  // Debug: Log game state
+  useEffect(() => {
+    if (gameEnded) {
+      console.log('[GameView] 🎮 Game ended state:', { gameEnded, gameResult, hasResult: !!gameResult });
+    }
+  }, [gameEnded, gameResult]);
+
   // Initialize empty board if no state yet
   const displayBoardState = boardState || (() => {
     const empty = Array(boardSize).fill(null).map(() => Array(boardSize).fill(null));
@@ -384,13 +391,6 @@ function GameView() {
   
   // Get own player name from auth if logged in
   const ownName = auth.loggedIn && auth.user ? auth.user.username : ownInfo.name;
-
-  // Debug: Log game state
-  useEffect(() => {
-    if (gameEnded) {
-      console.log('[GameView] 🎮 Game ended state:', { gameEnded, gameResult, hasResult: !!gameResult });
-    }
-  }, [gameEnded, gameResult]);
 
   return (
     <div className="game-view">
