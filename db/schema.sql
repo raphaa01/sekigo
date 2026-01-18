@@ -1,5 +1,5 @@
--- Go Platform Database Schema
--- PostgreSQL database schema for the online Go platform
+-- SekiGo Database Schema
+-- PostgreSQL database schema for SekiGo
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

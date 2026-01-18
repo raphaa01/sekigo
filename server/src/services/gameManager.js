@@ -320,7 +320,7 @@ class GameManager {
     const finalBoard = engineState ? engineState.board : game.boardState;
 
     // Broadcast game end to both players
-    this.broadcastToGame(gameId, {
+    const gameEndedMessage = {
       type: EventTypes.GAME_ENDED,
       data: {
         gameId,
@@ -336,7 +336,10 @@ class GameManager {
           white: ratingChanges.white
         }
       }
-    });
+    };
+    
+    console.log(`[GameManager] 📢 Broadcasting GAME_ENDED to both players for game ${gameId}:`, gameEndedMessage);
+    this.broadcastToGame(gameId, gameEndedMessage);
     
     // Send stats update to both players (same payload shape as /api/stats)
     const blackPayload = {
@@ -514,11 +517,16 @@ class GameManager {
    */
   broadcastToGame(gameId, message) {
     const game = this.activeGames.get(gameId);
-    if (!game) return;
+    if (!game) {
+      console.error(`[GameManager] Cannot broadcast to game ${gameId}: game not found`);
+      return;
+    }
 
     // Use identityKey if available, fallback to userId (for backward compatibility)
     const blackIdentity = game.blackPlayerIdentityKey || game.blackPlayerId;
     const whiteIdentity = game.whitePlayerIdentityKey || game.whitePlayerId;
+    
+    console.log(`[GameManager] Broadcasting ${message.type} to game ${gameId}: black=${blackIdentity}, white=${whiteIdentity}`);
     
     websocketHandler.sendToUser(blackIdentity, message);
     websocketHandler.sendToUser(whiteIdentity, message);

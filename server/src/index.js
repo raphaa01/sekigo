@@ -1,5 +1,5 @@
 /**
- * Main entry point for the Go Platform Server
+ * Main entry point for the SekiGo Server
  * 
  * This server handles:
  * - HTTP API endpoints (for future REST API usage)
@@ -243,6 +243,6 @@ wss.on('error', (error) => {
 const PORT = process.env.PORT || 3001;
 
 server.listen(PORT, () => {
-  console.log(`Go Platform Server running on http://localhost:${PORT}`);
+  console.log(`SekiGo Server running on http://localhost:${PORT}`);
   console.log(`WebSocket server ready on ws://localhost:${PORT}/ws`);
 });

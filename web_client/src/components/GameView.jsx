@@ -120,8 +120,10 @@ function GameView() {
     });
 
     const unsubscribeGameEnded = websocketService.on(EventTypes.GAME_ENDED, (data) => {
-      if (data.gameId === gameId) {
-        console.log('[GameView] Game ended:', data);
+      console.log('[GameView] GAME_ENDED event received:', data);
+      if (data && data.gameId === gameId) {
+        console.log('[GameView] ✅ Game ended event matches current game:', gameId);
+        console.log('[GameView] Setting gameEnded=true, gameResult=', data);
         setGameEnded(true);
         setGameResult(data);
         setShowResignConfirm(false); // Close resign modal if still open
@@ -133,6 +135,8 @@ function GameView() {
         setTimeout(() => {
           console.log('[GameView] Game ended - stats should update via stats_update event');
         }, 1000);
+      } else {
+        console.warn('[GameView] GAME_ENDED event received but gameId mismatch:', data?.gameId, 'vs current:', gameId);
       }
     });
 
@@ -317,6 +321,24 @@ function GameView() {
       websocketService.send(EventTypes.RESIGN, { gameId });
       console.log('[GameView] ✅ Resign message sent successfully');
       setShowResignConfirm(false);
+      
+      // Fallback: If GAME_ENDED doesn't arrive within 2 seconds, show game end manually
+      setTimeout(() => {
+        if (!gameEnded) {
+          console.warn('[GameView] GAME_ENDED event not received after 2s, showing game end manually');
+          // Determine winner based on player color (opponent wins when we resign)
+          const winner = playerColor === 'black' ? 'white' : 'black';
+          setGameEnded(true);
+          setGameResult({
+            gameId,
+            winner,
+            reason: 'resignation',
+            boardSize,
+            finalScore: { black: 0, white: 0 },
+            scoreDiff: 0
+          });
+        }
+      }, 2000);
     } catch (error) {
       console.error('[GameView] ❌ Error sending resign:', error);
       alert('Fehler beim Senden der Aufgabe. Bitte versuche es erneut.');
@@ -362,6 +384,13 @@ function GameView() {
   
   // Get own player name from auth if logged in
   const ownName = auth.loggedIn && auth.user ? auth.user.username : ownInfo.name;
+
+  // Debug: Log game state
+  useEffect(() => {
+    if (gameEnded) {
+      console.log('[GameView] 🎮 Game ended state:', { gameEnded, gameResult, hasResult: !!gameResult });
+    }
+  }, [gameEnded, gameResult]);
 
   return (
     <div className="game-view">

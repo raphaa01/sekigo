@@ -1,4 +1,4 @@
-# Go Platform Server
+# SekiGo Server
 
 Backend-Server für die Go-Plattform.
 

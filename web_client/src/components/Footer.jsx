@@ -15,7 +15,7 @@ function Footer() {
           Impressum
         </Link>
         <span className="footer__copyright">
-          © 2026 Go Platform
+          © 2026 SekiGo
         </span>
       </div>
     </footer>

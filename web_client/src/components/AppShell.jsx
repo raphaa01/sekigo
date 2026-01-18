@@ -54,7 +54,7 @@ function AppShell({ children }) {
               onClick={handleLogoClick}
             >
               <span className="app-shell__logo-icon">⚫</span>
-              <span className="app-shell__logo-text">Go Platform</span>
+              <span className="app-shell__logo-text">SekiGo</span>
             </button>
             
             <div className="app-shell__header-right">

@@ -1,4 +1,4 @@
-# Go Platform - Online Go Spiel
+# SekiGo - Online Go Spiel
 
 Eine moderne Online-Go-Plattform (Weiqi/Baduk) mit Echtzeit-Multiplayer, Matchmaking und Rangsystem. Die Plattform ist zunächst als Web-Anwendung konzipiert, aber von Anfang an so entworfen, dass native iOS- und Android-Apps später dieselben Server-APIs nutzen können.
 

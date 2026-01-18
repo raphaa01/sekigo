@@ -1,7 +1,7 @@
 {
   "name": "go-platform-server",
   "version": "1.0.0",
-  "description": "Backend server for online Go platform",
+  "description": "Backend server for SekiGo",
   "main": "src/index.js",
   "type": "module",
   "scripts": {

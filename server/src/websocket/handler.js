@@ -57,7 +57,7 @@ class WebSocketHandler {
           this.send(ws, {
             type: EventTypes.CONNECTED,
             data: { 
-              message: 'Connected to Go Platform', 
+              message: 'Connected to SekiGo', 
               userId: user.id, 
               username: user.username,
               identityKey: ws.identityKey
@@ -79,7 +79,7 @@ class WebSocketHandler {
 
     this.send(ws, {
       type: EventTypes.CONNECTED,
-      data: { message: 'Connected to Go Platform. Please send hello with guestId.' }
+      data: { message: 'Connected to SekiGo. Please send hello with guestId.' }
     });
 
     // Set up message handlers (guests are allowed, no blocking)
@@ -133,7 +133,7 @@ class WebSocketHandler {
         this.send(ws, {
           type: EventTypes.CONNECTED,
           data: { 
-            message: 'Connected to Go Platform', 
+            message: 'Connected to SekiGo', 
             userId: ws.authUser.id, 
             username: ws.authUser.username, 
             identityKey: ws.identityKey,
@@ -172,7 +172,7 @@ class WebSocketHandler {
         this.send(ws, {
           type: EventTypes.CONNECTED,
           data: { 
-            message: 'Connected to Go Platform', 
+            message: 'Connected to SekiGo', 
             userId: guestId,
             identityKey: ws.identityKey
           }

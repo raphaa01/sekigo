@@ -30,7 +30,7 @@ function ImpressumView() {
           <section className="impressum-view__section">
             <h2 className="impressum-view__section-title">Angaben gemäß § 5 TMG</h2>
             <p>
-              Go Platform<br />
+              SekiGo<br />
               Beispielstraße 123<br />
               12345 Beispielstadt
             </p>
@@ -39,7 +39,7 @@ function ImpressumView() {
           <section className="impressum-view__section">
             <h2 className="impressum-view__section-title">Kontakt</h2>
             <p>
-              E-Mail: info@goplatform.example
+              E-Mail: info@sekigo.example
             </p>
           </section>
 
