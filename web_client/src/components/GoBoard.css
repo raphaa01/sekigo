@@ -1,0 +1,19 @@
+.go-board-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-md);
+  width: 100%;
+  overflow: visible; /* Ensure stones at edges are not clipped */
+}
+
+.go-board {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible; /* Ensure stones at edges are not clipped */
+  user-select: none;
+  -webkit-user-select: none;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+}

@@ -1,0 +1,396 @@
+.game-view {
+  width: 100%;
+  max-width: var(--max-width-content);
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.game-header {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.game-header__players {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.game-header__player {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.game-header__player--opponent {
+  text-align: left;
+}
+
+.game-header__player--own {
+  text-align: right;
+}
+
+.game-header__player-name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.game-header__player-rank {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.game-header__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 150px;
+}
+
+.game-header__board-size {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.game-header__turn {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.game-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+}
+
+@media (min-width: 1024px) {
+  .game-content {
+    grid-template-columns: 1fr auto;
+  }
+}
+
+.board-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.game-controls {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  min-width: 250px;
+}
+
+.game-status {
+  margin-bottom: var(--spacing-lg);
+}
+
+.game-status p {
+  margin: var(--spacing-sm) 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.game-status strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.your-turn {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.opponent-turn {
+  color: var(--color-text-secondary);
+}
+
+.game-ended {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-lg);
+}
+
+.control-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.loading {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+}
+
+/* Resign Confirmation Modal */
+.resign-confirm-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.resign-confirm-content {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--shadow-xl);
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.resign-confirm-title {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.resign-confirm-message {
+  margin: 0 0 var(--spacing-lg) 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.resign-confirm-buttons {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+}
+
+.resign-confirm-button {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 100px;
+}
+
+.resign-confirm-button--cancel {
+  background-color: var(--color-secondary);
+  color: var(--color-text-primary);
+}
+
+.resign-confirm-button--cancel:hover {
+  background-color: var(--color-secondary-hover);
+}
+
+.resign-confirm-button--confirm {
+  background-color: var(--color-danger);
+  color: white;
+}
+
+.resign-confirm-button--confirm:hover {
+  background-color: var(--color-danger-hover);
+  box-shadow: var(--shadow-md);
+}
+
+/* Game End Modal */
+.game-end-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+}
+
+.game-end-content {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  box-shadow: var(--shadow-xl);
+}
+
+.game-end-content h2 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-2xl);
+  color: var(--color-text-primary);
+}
+
+.game-result {
+  margin-bottom: var(--spacing-lg);
+}
+
+.winner {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--spacing-md);
+  color: var(--color-primary);
+}
+
+.scores {
+  margin-bottom: var(--spacing-md);
+}
+
+.score-item {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--radius-md);
+}
+
+.score-label {
+  font-weight: var(--font-weight-semibold);
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.score-value {
+  font-size: var(--font-size-xl);
+  color: var(--color-text-primary);
+}
+
+.komi {
+  display: block;
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.score-diff {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-primary-light);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.end-reason {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.back-home-button {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.back-home-button:hover {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.pass-button,
+.resign-button {
+  padding: var(--spacing-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.pass-button {
+  background-color: var(--color-secondary);
+  color: var(--color-text-primary);
+}
+
+.pass-button:hover:not(:disabled) {
+  background-color: var(--color-secondary-hover);
+}
+
+.pass-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.resign-button {
+  background-color: var(--color-danger);
+  color: white;
+}
+
+.resign-button:hover {
+  background-color: var(--color-danger-hover);
+}
+
+@media (max-width: 768px) {
+  .game-header__players {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  
+  .game-header__player--opponent,
+  .game-header__player--own {
+    text-align: center;
+  }
+  
+  .game-header__center {
+    order: -1;
+  }
+  
+  .game-content {
+    grid-template-columns: 1fr;
+  }
+}

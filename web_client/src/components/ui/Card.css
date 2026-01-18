@@ -1,0 +1,26 @@
+.card {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: box-shadow var(--transition-fast);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.card--padding-none {
+  padding: 0;
+}
+
+.card--padding-sm {
+  padding: var(--spacing-md);
+}
+
+.card--padding-md {
+  padding: var(--spacing-lg);
+}
+
+.card--padding-lg {
+  padding: var(--spacing-xl);
+}
