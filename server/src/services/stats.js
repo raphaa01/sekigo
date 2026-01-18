@@ -490,25 +490,206 @@ class StatsService {
   }
 
   /**
-   * Get leaderboard (top players by rating)
+   * Get leaderboard (top players by rating across all board sizes)
+   * Returns the highest rating for each player across all board sizes
    * @param {number} limit - Number of players to return
    * @returns {Promise<Array>} Array of player stats
    */
   async getLeaderboard(limit = 10) {
     try {
-      const result = await db.query(
-        `SELECT u.id, u.username, r.board_size, r.rating, ps.games_played, ps.wins, ps.losses
-         FROM ratings r
-         JOIN users u ON r.user_id = u.id
-         LEFT JOIN player_stats ps ON r.user_id = ps.user_id AND r.board_size = ps.board_size
-         WHERE u.is_guest = FALSE
-         ORDER BY r.rating DESC
-         LIMIT $1`,
-        [limit]
-      );
-      return result.rows;
+      console.log('[Stats] Fetching leaderboard...');
+      
+      // First, let's check what tables exist and what data is in them
+      let ratingsCount = 0;
+      let guestRatingsCount = 0;
+      
+      try {
+        const checkRatings = await db.query(`SELECT COUNT(*) as count FROM ratings`);
+        ratingsCount = parseInt(checkRatings.rows[0].count);
+        console.log(`[Stats] Ratings table: ${ratingsCount} rows`);
+      } catch (err) {
+        console.error('[Stats] Error checking ratings table:', err.message);
+      }
+      
+      try {
+        const checkGuestRatings = await db.query(`SELECT COUNT(*) as count FROM guest_ratings`);
+        guestRatingsCount = parseInt(checkGuestRatings.rows[0].count);
+        console.log(`[Stats] Guest ratings table: ${guestRatingsCount} rows`);
+      } catch (err) {
+        console.error('[Stats] Error checking guest_ratings table:', err.message);
+        console.log('[Stats] guest_ratings table might not exist yet');
+      }
+      
+      // Get all ratings from accounts - try with board_size first
+      let accountResult;
+      try {
+        // Check if board_size column exists
+        const columnCheck = await db.query(`
+          SELECT column_name 
+          FROM information_schema.columns 
+          WHERE table_name = 'ratings' AND column_name = 'board_size'
+        `);
+        
+        if (columnCheck.rows.length > 0) {
+          // board_size exists - use it
+          console.log('[Stats] board_size column exists in ratings table');
+          accountResult = await db.query(
+            `SELECT 
+               u.id, 
+               u.username, 
+               r.rating,
+               r.board_size,
+               COALESCE(ps.games_played, 0) as games_played,
+               COALESCE(ps.wins, 0) as wins,
+               COALESCE(ps.losses, 0) as losses
+             FROM users u
+             JOIN ratings r ON r.user_id = u.id
+             LEFT JOIN player_stats ps ON r.user_id = ps.user_id AND r.board_size = ps.board_size
+             WHERE u.is_guest = FALSE
+            `
+          );
+          console.log(`[Stats] Found ${accountResult.rows.length} account ratings (with board_size)`);
+        } else {
+          // board_size doesn't exist - try without it
+          console.log('[Stats] board_size column does NOT exist in ratings table');
+          
+          // Check if is_guest column exists in users table
+          const isGuestCheck = await db.query(`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'users' AND column_name = 'is_guest'
+          `);
+          
+          if (isGuestCheck.rows.length > 0) {
+            // is_guest exists
+            accountResult = await db.query(
+              `SELECT 
+                 u.id, 
+                 u.username, 
+                 r.rating,
+                 NULL as board_size,
+                 COALESCE(ps.games_played, 0) as games_played,
+                 COALESCE(ps.wins, 0) as wins,
+                 COALESCE(ps.losses, 0) as losses
+               FROM users u
+               JOIN ratings r ON r.user_id = u.id
+               LEFT JOIN player_stats ps ON r.user_id = ps.user_id
+               WHERE u.is_guest = FALSE
+              `
+            );
+          } else {
+            // is_guest doesn't exist - assume all users in users table are accounts
+            console.log('[Stats] is_guest column does NOT exist, assuming all users are accounts');
+            accountResult = await db.query(
+              `SELECT 
+                 u.id, 
+                 u.username, 
+                 r.rating,
+                 NULL as board_size,
+                 COALESCE(ps.games_played, 0) as games_played,
+                 COALESCE(ps.wins, 0) as wins,
+                 COALESCE(ps.losses, 0) as losses
+               FROM users u
+               JOIN ratings r ON r.user_id = u.id
+               LEFT JOIN player_stats ps ON r.user_id = ps.user_id
+              `
+            );
+          }
+          console.log(`[Stats] Found ${accountResult.rows.length} account ratings (without board_size)`);
+        }
+      } catch (err) {
+        console.error('[Stats] ❌ Error querying account ratings:', err.message);
+        console.error('[Stats] Error stack:', err.stack);
+        accountResult = { rows: [] };
+      }
+      
+      // Get all ratings from guests
+      let guestResult = { rows: [] };
+      try {
+        // Check if guest_ratings table exists first
+        const tableCheck = await db.query(`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_name = 'guest_ratings'
+          )
+        `);
+        
+        if (tableCheck.rows[0].exists) {
+          guestResult = await db.query(
+            `SELECT 
+               gr.guest_key as id,
+               NULL as username,
+               gr.rating,
+               gr.board_size,
+               COALESCE(gs.games, 0) as games_played,
+               COALESCE(gs.wins, 0) as wins,
+               COALESCE(gs.losses, 0) as losses
+             FROM guest_ratings gr
+             LEFT JOIN guest_stats gs ON gr.guest_key = gs.guest_key AND gr.board_size = gs.board_size
+            `
+          );
+          console.log(`[Stats] Found ${guestResult.rows.length} guest ratings`);
+        } else {
+          console.log('[Stats] guest_ratings table does not exist, skipping');
+        }
+      } catch (err) {
+        console.error('[Stats] ❌ Error querying guest ratings:', err.message);
+        console.error('[Stats] Error details:', err.stack);
+        guestResult = { rows: [] };
+      }
+      
+      // Combine accounts and guests, get max rating per player
+      const allPlayers = new Map();
+      
+      // Process accounts - keep highest rating per user
+      accountResult.rows.forEach(row => {
+        const existing = allPlayers.get(row.id);
+        if (!existing || row.rating > existing.rating) {
+          allPlayers.set(row.id, {
+            id: row.id,
+            username: row.username,
+            rating: row.rating,
+            games_played: row.games_played,
+            wins: row.wins,
+            losses: row.losses,
+            isGuest: false
+          });
+        }
+      });
+      
+      // Process guests - keep highest rating per guest
+      guestResult.rows.forEach(row => {
+        const existing = allPlayers.get(row.id);
+        if (!existing || row.rating > existing.rating) {
+          allPlayers.set(row.id, {
+            id: row.id,
+            username: null,
+            rating: row.rating,
+            games_played: row.games_played,
+            wins: row.wins,
+            losses: row.losses,
+            isGuest: true
+          });
+        }
+      });
+      
+      console.log(`[Stats] Combined ${allPlayers.size} unique players`);
+      
+      // Sort by rating descending and limit
+      const sorted = Array.from(allPlayers.values())
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, limit);
+      
+      console.log(`[Stats] Leaderboard: ${sorted.length} players found (showing top ${limit})`);
+      if (sorted.length > 0) {
+        console.log(`[Stats] Top player: ${sorted[0].username || 'Guest'} with rating ${sorted[0].rating}`);
+      } else {
+        console.log('[Stats] ⚠️ No players found in leaderboard!');
+      }
+      return sorted;
     } catch (error) {
       console.error('[Stats] Error getting leaderboard:', error);
+      console.error('[Stats] Error details:', error.stack);
       return [];
     }
   }

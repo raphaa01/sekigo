@@ -157,18 +157,38 @@ function GoBoard({ size = 19, boardState, onMove, disabled = false, lastMove = n
     setHoveredIntersection(null);
   };
 
-  // Get star points (hoshi) positions for 19x19 board
+  // Get star points (hoshi) positions for different board sizes
   const getStarPoints = () => {
-    if (size !== 19) return [];
-    
-    const starPositions = [3, 9, 15];
-    const points = [];
-    for (const x of starPositions) {
-      for (const y of starPositions) {
-        points.push({ x, y });
+    if (size === 19) {
+      // 19x19: 9 points (3x3 grid)
+      const starPositions = [3, 9, 15];
+      const points = [];
+      for (const x of starPositions) {
+        for (const y of starPositions) {
+          points.push({ x, y });
+        }
       }
+      return points;
+    } else if (size === 13) {
+      // 13x13: 5 points (corners and center)
+      return [
+        { x: 3, y: 3 },   // Top-left corner
+        { x: 3, y: 9 },   // Top-right corner
+        { x: 6, y: 6 },   // Center
+        { x: 9, y: 3 },   // Bottom-left corner
+        { x: 9, y: 9 }    // Bottom-right corner
+      ];
+    } else if (size === 9) {
+      // 9x9: 5 points (corners and center)
+      return [
+        { x: 2, y: 2 },   // Top-left corner
+        { x: 2, y: 6 },   // Top-right corner
+        { x: 4, y: 4 },   // Center
+        { x: 6, y: 2 },   // Bottom-left corner
+        { x: 6, y: 6 }    // Bottom-right corner
+      ];
     }
-    return points;
+    return [];
   };
 
   const starPoints = getStarPoints();

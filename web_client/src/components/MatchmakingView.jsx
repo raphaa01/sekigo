@@ -13,6 +13,7 @@ import SegmentedControl from './ui/SegmentedControl';
 import { useToast } from './ui/ToastContainer';
 import { useTab } from './AppShell';
 import SettingsView from './SettingsView';
+import LeaderboardView from './LeaderboardView';
 import './MatchmakingView.css';
 
 /**
@@ -570,6 +571,10 @@ function MatchmakingView({ onMatchFound }) {
       )}
 
       {/* Einstellungen Tab Content */}
+      {activeTab === 'rangliste' && (
+        <LeaderboardView />
+      )}
+
       {activeTab === 'einstellungen' && (
         <SettingsView />
       )}

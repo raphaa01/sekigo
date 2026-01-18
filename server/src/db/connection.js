@@ -36,6 +36,15 @@ export async function initDatabase() {
   try {
     const client = await pool.connect();
     console.log('Database connection established');
+    
+    // Run migration automatically on startup
+    try {
+      await runMigrationIfNeeded(client);
+    } catch (migrationError) {
+      console.warn('Migration warning (non-fatal):', migrationError.message);
+      // Continue even if migration fails
+    }
+    
     client.release();
   } catch (error) {
     console.error('Database connection error:', error);
@@ -43,6 +52,46 @@ export async function initDatabase() {
   }
 
   return pool;
+}
+
+/**
+ * Run migration if needed
+ */
+async function runMigrationIfNeeded(client) {
+  // Check if board_size column exists in ratings
+  const checkResult = await client.query(`
+    SELECT column_name 
+    FROM information_schema.columns 
+    WHERE table_name = 'ratings' AND column_name = 'board_size'
+  `);
+  
+  if (checkResult.rows.length > 0) {
+    console.log('✅ Database schema is up to date (board_size exists)');
+    return;
+  }
+  
+  console.log('🔄 Running database migration to add board_size support...');
+  
+  // Read and execute migration
+  const { readFileSync } = await import('fs');
+  const { fileURLToPath } = await import('url');
+  const { dirname, join } = await import('path');
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  
+  const migrationPath = join(__dirname, '..', '..', '..', '..', 'db', 'migrations', '004_fix_schema_for_leaderboard.sql');
+  const sql = readFileSync(migrationPath, 'utf8');
+  
+  await client.query('BEGIN');
+  try {
+    await client.query(sql);
+    await client.query('COMMIT');
+    console.log('✅ Migration completed successfully');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('❌ Migration failed:', error.message);
+    throw error;
+  }
 }
 
 /**

@@ -76,6 +76,13 @@ function AppShell({ children }) {
                   </button>
                   <button
                     type="button"
+                    className={`app-shell__tab ${activeTab === 'rangliste' ? 'app-shell__tab--active' : ''}`}
+                    onClick={() => setActiveTab('rangliste')}
+                  >
+                    Rangliste
+                  </button>
+                  <button
+                    type="button"
                     className={`app-shell__tab ${activeTab === 'einstellungen' ? 'app-shell__tab--active' : ''}`}
                     onClick={() => setActiveTab('einstellungen')}
                   >

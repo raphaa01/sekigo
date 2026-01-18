@@ -205,6 +205,35 @@ async function handleGetPlayerInfo(req, res) {
 
 app.get('/api/player-info', handleGetPlayerInfo);
 
+// Leaderboard endpoint - get top 10 players by rating
+async function handleGetLeaderboard(req, res) {
+  try {
+    console.log('[API] Leaderboard request received');
+    const leaderboard = await statsService.getLeaderboard(10);
+    console.log('[API] Leaderboard data:', leaderboard);
+    
+    // Format response
+    const players = leaderboard.map((player, index) => ({
+      rank: index + 1,
+      id: player.id,
+      username: player.username,
+      rating: player.rating || 1500,
+      games: player.games_played || 0,
+      wins: player.wins || 0,
+      losses: player.losses || 0,
+      isGuest: player.isGuest || false
+    }));
+    
+    console.log('[API] Sending leaderboard response with', players.length, 'players');
+    res.json({ players });
+  } catch (error) {
+    console.error('[API] Error fetching leaderboard:', error);
+    res.status(500).json({ error: 'Failed to fetch leaderboard', details: error.message });
+  }
+}
+
+app.get('/api/leaderboard', handleGetLeaderboard);
+
 // Debug endpoint: returns current identity (dev only)
 app.get('/api/debug/identity', async (req, res) => {
   try {
@@ -230,6 +259,52 @@ app.get('/api/debug/identity', async (req, res) => {
   } catch (error) {
     console.error('[API] Error in debug/identity:', error);
     res.status(500).json({ error: 'Failed to resolve identity' });
+  }
+});
+
+// Debug endpoint: check database tables for leaderboard
+app.get('/api/debug/leaderboard-check', async (req, res) => {
+  try {
+    const { db } = await import('./db/connection.js');
+    
+    // Check ratings table
+    const ratingsCheck = await db.query('SELECT COUNT(*) as count FROM ratings');
+    const ratingsSample = await db.query('SELECT * FROM ratings LIMIT 5');
+    
+    // Check guest_ratings table
+    const guestRatingsCheck = await db.query('SELECT COUNT(*) as count FROM guest_ratings');
+    const guestRatingsSample = await db.query('SELECT * FROM guest_ratings LIMIT 5');
+    
+    // Check users table
+    const usersCheck = await db.query('SELECT COUNT(*) as count FROM users WHERE is_guest = FALSE');
+    const usersSample = await db.query('SELECT id, username, is_guest FROM users WHERE is_guest = FALSE LIMIT 5');
+    
+    // Check if board_size column exists in ratings
+    const columnCheck = await db.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'ratings' AND column_name = 'board_size'
+    `);
+    
+    res.json({
+      ratings: {
+        count: parseInt(ratingsCheck.rows[0].count),
+        sample: ratingsSample.rows,
+        hasBoardSize: columnCheck.rows.length > 0
+      },
+      guestRatings: {
+        count: parseInt(guestRatingsCheck.rows[0].count),
+        sample: guestRatingsSample.rows
+      },
+      users: {
+        count: parseInt(usersCheck.rows[0].count),
+        sample: usersSample.rows
+      },
+      leaderboardResult: await statsService.getLeaderboard(10)
+    });
+  } catch (error) {
+    console.error('[API] Error in debug/leaderboard-check:', error);
+    res.status(500).json({ error: 'Failed to check database', details: error.message });
   }
 });
 
