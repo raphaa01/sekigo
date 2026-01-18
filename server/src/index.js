@@ -27,12 +27,37 @@ const server = createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
 
 // CORS configuration
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, or same-origin)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,
+      'http://localhost:3000',
+      'http://localhost:5173', // Vite default port
+    ].filter(Boolean);
+    
+    // In production, allow any origin (Render/Vercel can have dynamic origins)
+    // For better security, you can restrict this to specific domains
+    if (process.env.NODE_ENV === 'production') {
+      // Allow all origins in production (you can restrict this if needed)
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS] Blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Guest-Id'] // Allow X-Guest-Id header
-}));
+};
+
+app.use(cors(corsOptions));
 
 // Request logging (dev-friendly)
 if (process.env.NODE_ENV !== 'test') {
@@ -241,8 +266,14 @@ wss.on('error', (error) => {
 });
 
 const PORT = process.env.PORT || 3001;
+const HOST = '0.0.0.0'; // Listen on all interfaces for Render deployment
 
-server.listen(PORT, () => {
-  console.log(`SekiGo Server running on http://localhost:${PORT}`);
-  console.log(`WebSocket server ready on ws://localhost:${PORT}/ws`);
+server.listen(PORT, HOST, () => {
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+  const wsProtocol = process.env.NODE_ENV === 'production' ? 'wss' : 'ws';
+  const host = process.env.PUBLIC_URL || `localhost:${PORT}`;
+  
+  console.log(`SekiGo Server running on ${protocol}://${host}`);
+  console.log(`WebSocket server ready on ${wsProtocol}://${host}/ws`);
+  console.log(`Listening on ${HOST}:${PORT}`);
 });

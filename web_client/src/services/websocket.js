@@ -13,9 +13,6 @@ import { getGuestUserId } from '../utils/guestId.js';
 class WebSocketService {
   constructor() {
     this.ws = null;
-    // Use Vite proxy in dev, direct connection in production
-    const isDev = import.meta.env.DEV;
-    this.baseUrl = isDev ? 'ws://localhost:3000/ws' : 'ws://localhost:3001/ws';
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
     this.reconnectDelay = 3000;
@@ -31,7 +28,27 @@ class WebSocketService {
    * @returns {string} WebSocket URL
    */
   getWebSocketUrl() {
-    return this.baseUrl;
+    // Priority: VITE_WS_URL env var > derive from window.location > fallback to dev proxy
+    if (import.meta.env.VITE_WS_URL) {
+      return import.meta.env.VITE_WS_URL;
+    }
+    
+    const isDev = import.meta.env.DEV;
+    
+    if (isDev) {
+      // In dev, use Vite proxy (relative path)
+      return 'ws://localhost:3000/ws';
+    }
+    
+    // In production, derive from current window location
+    if (typeof window !== 'undefined') {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = window.location.host;
+      return `${protocol}//${host}/ws`;
+    }
+    
+    // Fallback (shouldn't happen in browser)
+    return 'ws://localhost:3001/ws';
   }
 
   /**
